@@ -1,0 +1,33 @@
+#!/usr/bin/env node
+
+var program = require('commander')
+var co      = require('co')
+
+var org_labels = require('..')
+
+program._name   = 'org-labels'
+program._method = 'POST'
+
+program
+  .version(require('../package.json').version)
+  .usage('<organization> <label> <color>')
+  .option('-a, --add', 'adds labels', function () {
+    program._method = 'POST'
+    return true
+  })
+  .option('-d, --delete', 'removes labels', function () {
+    program._method = 'DELETE'
+    return true
+  })
+  .option('-u, --update', 'updates existing labels', function () {
+    program._method = 'PATCH'
+    return true
+  })
+  .parse(process.argv)
+
+var args = program.args
+
+co(org_labels(args, program))(function (err) {
+  if (err) throw err
+  process.exit()
+})

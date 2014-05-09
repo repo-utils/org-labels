@@ -1,0 +1,49 @@
+{
+  "name": "org-labels",
+  "description": "Updates issue labels across a GitHub organization.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Jeremiah Senkpiel",
+    "email": "fishrock123@rocketmail.com",
+    "url": "https://searchbeam.jit.su",
+    "twitter": "https://twitter.com/fishrock123"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/repo-utils/org-labels.git"
+  },
+  "bugs": {
+    "mail": "fishrock123@rocketmail.com",
+    "url": "https://github.com/repo-utils/org-labels/issues"
+  },
+  "keywords": [
+    "github",
+    "repo",
+    "organization",
+    "issues",
+    "issue",
+    "labels",
+    "label",
+    "tags",
+    "tag"
+  ],
+  "dependencies": {
+    "co": "^3.0.5",
+    "chanel": "^2.0.2",
+    "commander": "^2.1.0",
+    "parse-link-header": "~0.1.0",
+    "yield-ratelimit-reset": "^1.0.0",
+    "co-request": "~0.2.0"
+  },
+  "devDependencies": {
+    "mocha": "*"
+  },
+  "bin": {
+    "org-labels": "./bin/org-labels"
+  },
+  "preferGlobal": true,
+  "scripts": {
+    "test": "mocha --reporter spec test/test.js"
+  }
+}
