@@ -16,7 +16,13 @@ $ npm install -g org-labels
 
 ```
 $ org-labels <github org / user> <label name> <color: 09aF00>
+```
 
+### Example
+
+This would add a `docs` issue label with the color `d4c5f9` to every repo in `repo-utils`.
+
+```
 $ org-labels repo-utils docs d4c5f9
 ```
 
