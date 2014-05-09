@@ -2,6 +2,8 @@
 
 WORK IN PROGRESS
 
+A tool for organization-wide GitHub issue labels.
+
 ### Install
 
 ```
