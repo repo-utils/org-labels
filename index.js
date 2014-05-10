@@ -55,7 +55,7 @@ function* labels(args, opts) {
 
   var res = yield request({
         url:     'https://api.github.com/orgs/' + org + '/repos'
-      , headers: { "User-Agent": GITHUB_USERNAME || "org-tagger" }
+      , headers: { "User-Agent": GITHUB_USERNAME || "org-labels" }
       , auth:    auth
       , json:    true
     })
