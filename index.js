@@ -14,7 +14,7 @@ var auth
 if (GITHUB_API_TOKEN) {
   auth = {
       user: GITHUB_API_TOKEN
-    , pass:'x-oauth-basic'
+    , pass: 'x-oauth-basic'
   }
 } else if (GITHUB_USERNAME && GITHUB_PASSWORD) {
   auth = {
@@ -111,7 +111,7 @@ function* send_labels(org, repos, method, opts) {
   while (i--) {
     arr.push(request({
         url:     url.replace(/:repo/, repos[i]) + (opts.ext ? '/' + opts.ext : '')
-      , headers: { 'User-Agent': GITHUB_USERNAME || 'org-tagger' }
+      , headers: { 'User-Agent': GITHUB_USERNAME || 'org-labels' }
       , method:  method
       , json:    opts
       , auth:    auth
