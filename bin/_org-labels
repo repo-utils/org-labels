@@ -39,6 +39,13 @@ program
     co_labels('rename', arguments)
   })
 
+program
+  .command('standardize <org> <repo>')
+  .description(' - reads a config/github_labels.json file from a repo and updates labels accordingly')
+  .action(function() {
+    co_labels('standardize', arguments)
+  })
+
 program.parse(process.argv)
 
 function co_labels(fn, args) {

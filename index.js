@@ -29,6 +29,7 @@ module.exports.add    = add
 module.exports.remove = remove
 module.exports.update = update
 module.exports.rename = rename
+module.exports.standardize = standardize
 
 function* add(args, program) {
   var org   = args[0]
@@ -43,6 +44,8 @@ function* add(args, program) {
 
   log_results(results, label)
   console.log('done adding labels')
+
+  return yield results
 }
 
 function* remove(args, program) {
@@ -54,6 +57,8 @@ function* remove(args, program) {
 
   log_results(results, label)
   console.log('done removing labels')
+
+  return yield results
 }
 
 function* update(args, program) {
@@ -69,6 +74,8 @@ function* update(args, program) {
 
   log_results(results, label)
   console.log('done updating labels')
+
+  return yield results
 }
 
 function* rename(args, program) {
@@ -81,6 +88,70 @@ function* rename(args, program) {
 
   log_results(results, label)
   console.log('done renaming labels')
+
+  return yield results
+}
+
+function* standardize(args, program) {
+  var org         = args[0]
+  var config_repo = args[1]
+
+  var res = yield request({
+        url:     'https://api.github.com/repos/' + org + '/' + config_repo
+               + '/contents/config/github_labels.json'
+      , headers: { "User-Agent": GITHUB_USERNAME || "org-labels" }
+      , auth:    auth
+      , json:    true
+    })
+  if (res.statusCode !== 200) throw new Error('error retrieving config from repo: ' + JSON.stringify(res.headers) +'\n')
+
+  console.log('\nGitHub rate limit remaining: ' + res.headers['x-ratelimit-remaining'])
+
+  var config = JSON.parse(new Buffer(res.body.content, 'base64').toString('utf8'))
+  var results = yield* process_config(org, config)
+
+  console.log('done standardizing labels')
+}
+
+function* process_config(org, config) {
+  if (!Array.isArray(config))
+    throw new Error('error: github_labels.json must be a json array')
+
+  console.log('standardizing %d labels', config.length)
+
+  var i = config.length
+  while (i--) {
+    var label = config[i]
+
+    var results = yield* add([org, label.name, label.color])
+
+    var j = results.length
+    while(j--) {
+      var res = results[j]
+
+      if (res.statusCode === 422) {
+
+        var url = 'https://api.github.com' + res.req.path + '/' + label.name
+        var result = yield request({
+            url:     url
+          , headers: { 'User-Agent': GITHUB_USERNAME || 'org-labels' }
+          , method:  'PATCH'
+          , json:    { name: label.name, color: label.color }
+          , auth:    auth
+        })
+
+        if (result.statusCode === 200)
+          console.log('label "' + label.name + '" successfully updated at ' + result.request.path)
+        else {
+          console.log(result.request.path)
+          console.log('status: ' + result.statusCode)
+          if (result.body) console.log(result.body)
+        }
+
+        results[j] = result
+      }
+    }
+  }
 }
 
 function* get_repos(org) {
