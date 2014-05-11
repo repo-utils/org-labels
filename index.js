@@ -80,7 +80,7 @@ function* rename(args, program) {
   var results = yield* send_labels(org, repos, 'PATCH', { name: new_label, ext: label })
 
   log_results(results, label)
-  console.log('done adding labels')
+  console.log('done renaming labels')
 }
 
 function* get_repos(org) {
