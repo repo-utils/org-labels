@@ -25,34 +25,65 @@ if (GITHUB_API_TOKEN) {
   throw new Error('requires a personal env.GITHUB_API_TOKEN or both env.GITHUB_USERNAME and env.GITHUB_PASSWORD')
 }
 
-module.exports = labels
+module.exports.add    = add
+module.exports.remove = remove
+module.exports.update = update
+module.exports.rename = rename
 
-function* labels(args, opts) {
+function* add(args, program) {
   var org   = args[0]
   var label = args[1]
   var color = args[2]
 
-  //var state = {}
-  //process.on('uncaughtException', onError) // maybe add this back in when you are sure your (my?) syntax is correct lol
-  console.log('\norganization: ' + org
-            + '\nlabel: ' + label
-            + '\ncolor: #' + color
-            + '\nmethod: ' + opts._method
-            + '\n')
-
-  if (!org || 'string' != typeof org)
-    throw new TypeError('an organization must be defined: <org> <label> <color>')
-
-  if (!label || 'string' != typeof label)
-    throw new TypeError('a label name must be defined: <org> <label> <color>')
-
-  if (!opts.method === 'DELETE' && (!color || 'string' != typeof color))
-    throw new TypeError('a color must be defined: <org> <label> <color>')
-
-  if (!opts.method === 'DELETE' && !valid_color.test(color))
+  if (!valid_color.test(color))
     throw new TypeError('color must be a valid hex color code without the \'#\': 09aF00')
 
+  var repos   = yield* get_repos(org)
+  var results = yield* send_labels(org, repos, 'POST', { name: label, color: color })
 
+  log_results(results, label)
+  console.log('done adding labels')
+}
+
+function* remove(args, program) {
+  var org   = args[0]
+  var label = args[1]
+
+  var repos   = yield* get_repos(org)
+  var results = yield* send_labels(org, repos, 'DELETE', { ext: label })
+
+  log_results(results, label)
+  console.log('done removing labels')
+}
+
+function* update(args, program) {
+  var org   = args[0]
+  var label = args[1]
+  var color = args[2]
+
+  if (!valid_color.test(color))
+    throw new TypeError('color must be a valid hex color code without the \'#\': 09aF00')
+
+  var repos   = yield* get_repos(org)
+  var results = yield* send_labels(org, repos, 'PATCH', { name: label, color: color, ext: label })
+
+  log_results(results, label)
+  console.log('done updating labels')
+}
+
+function* rename(args, program) {
+  var org       = args[0]
+  var label     = args[1]
+  var new_label = args[2]
+
+  var repos   = yield* get_repos(org)
+  var results = yield* send_labels(org, repos, 'PATCH', { name: new_label, ext: label })
+
+  log_results(results, label)
+  console.log('done adding labels')
+}
+
+function* get_repos(org) {
   var res = yield request({
         url:     'https://api.github.com/orgs/' + org + '/repos'
       , headers: { "User-Agent": GITHUB_USERNAME || "org-labels" }
@@ -69,15 +100,29 @@ function* labels(args, opts) {
     repos.push(res.body[i].name)
   }
 
-  var json_out = {
-      name:  label
-    , color: color
-  }
+  return repos
+}
+
+function* send_labels(org, repos, method, opts) {
+  var arr = []
+  var i   = repos.length
   var url = 'https://api.github.com/repos/' + org + '/:repo/labels'
 
-  var results = yield* update_labels(url, repos, opts._method, json_out)
+  while (i--) {
+    arr.push(request({
+        url:     url.replace(/:repo/, repos[i]) + (opts.ext ? '/' + opts.ext : '')
+      , headers: { 'User-Agent': GITHUB_USERNAME || 'org-tagger' }
+      , method:  method
+      , json:    opts
+      , auth:    auth
+    }))
+  }
 
-  i = results.length
+  return yield arr
+}
+
+function log_results(results, label) {
+  var i = results.length
   while (i--) {
     var result = results[i]
 
@@ -99,39 +144,4 @@ function* labels(args, opts) {
       if (result.body) console.log(result.body)
     }
   }
-
-  console.log('\nGitHub rate limit remaining: ' + res.headers['x-ratelimit-remaining'])
-
-  console.log('done updating labels')
-
-  // not really sure how this error handler works; remove?
-  /*process.removeListener('uncaughtException', onError)
-
-  function onError() {
-    console.error('ERR!')
-    Object.keys(state).forEach(function (repo) {
-      state[repo] = Date.now() - state[repo]
-    })
-    console.log(JSON.stringify(state, null, 2))
-    setImmediate(function () {
-      process.exit()
-    })
-  }*/
-}
-
-function* update_labels(url, repos, method, json) {
-  var arr = []
-  var i   = repos.length
-
-  while (i--) {
-    arr.push(request({
-        url:     url.replace(/:repo/, repos[i]) + (method !== 'POST' ? '/' + json.name : '')
-      , headers: { 'User-Agent': GITHUB_USERNAME || 'org-tagger' }
-      , method:  method
-      , json:    json
-      , auth:    auth
-    }))
-  }
-
-  return yield arr
 }

@@ -6,28 +6,44 @@ var co      = require('co')
 var org_labels = require('..')
 
 program._name   = 'org-labels'
-program._method = 'POST'
 
 program
   .version(require('../package.json').version)
-  .usage('<organization> <label> <color>')
-  .option('-a, --add', 'adds labels', function () {
-    program._method = 'POST'
-    return true
-  })
-  .option('-d, --delete', 'removes labels', function () {
-    program._method = 'DELETE'
-    return true
-  })
-  .option('-u, --update', 'updates existing labels', function () {
-    program._method = 'PATCH'
-    return true
-  })
-  .parse(process.argv)
+  // options
 
-var args = program.args
+program
+  .command('add <org> <label> <color>')
+  .description(' - adds a label to all repos in an organization')
+  .action(function() {
+    co_labels('add', arguments)
+  })
 
-co(org_labels(args, program))(function (err) {
-  if (err) throw err
-  process.exit()
-})
+program
+  .command('remove <org> <label>')
+  .description(' - removes a label from all repos in an organization')
+  .action(function() {
+    co_labels('remove', arguments)
+  })
+
+program
+  .command('update <org> <label> <color>')
+  .description(' - updates an existing label for all repos in an organization')
+  .action(function() {
+    co_labels('update', arguments)
+  })
+
+program
+  .command('rename <org> <label> <new>')
+  .description(' - renames an existing label for all repos in an organization')
+  .action(function() {
+    co_labels('rename', arguments)
+  })
+
+program.parse(process.argv)
+
+function co_labels(fn, args) {
+  co(org_labels[fn](args, program))(function (err) {
+    if (err) throw err
+    process.exit()
+  })
+}
