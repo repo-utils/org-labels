@@ -6,7 +6,7 @@ A tool for organization-wide GitHub issue labels.
 
 ### Install
 
-```
+```sh
 $ sudo n 0.11.13
 
 $ npm install -g org-labels
@@ -14,7 +14,7 @@ $ npm install -g org-labels
 
 ## Usage
 
-```
+```sh
 $ org-labels <github org / user> <label name> <color: 09aF00>
 ```
 
@@ -22,7 +22,7 @@ $ org-labels <github org / user> <label name> <color: 09aF00>
 
 This would add a `docs` issue label with the color `d4c5f9` to every repo in `repo-utils`.
 
-```
+```sh
 $ org-labels repo-utils docs d4c5f9
 ```
 
