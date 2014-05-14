@@ -9,6 +9,7 @@ var GITHUB_USERNAME  = process.env.GITHUB_USERNAME
 var GITHUB_PASSWORD  = process.env.GITHUB_PASSWORD
 var GITHUB_API_TOKEN = process.env.GITHUB_API_TOKEN
 
+var header = { 'User-Agent': 'org-labels' }
 var auth
 
 if (GITHUB_API_TOKEN) {
@@ -39,26 +40,14 @@ function* add(args, program) {
   if (!valid_color.test(color))
     throw new TypeError('color must be a valid hex color code without the \'#\': 09aF00')
 
-  var repos   = yield* get_repos(org)
-  var results = yield* send_labels(org, repos, 'POST', { name: label, color: color })
-
-  log_results(results, label)
-  console.log('done adding labels')
-
-  return yield results
+  return yield* do_all(org, 'POST', { name: label, color: color }, 'done adding labels')
 }
 
 function* remove(args, program) {
   var org   = args[0]
   var label = args[1]
 
-  var repos   = yield* get_repos(org)
-  var results = yield* send_labels(org, repos, 'DELETE', { ext: label })
-
-  log_results(results, label)
-  console.log('done removing labels')
-
-  return yield results
+  return yield* do_all(org, 'DELETE', { name: label, ext: label }, 'done removing labels')
 }
 
 function* update(args, program) {
@@ -69,13 +58,7 @@ function* update(args, program) {
   if (!valid_color.test(color))
     throw new TypeError('color must be a valid hex color code without the \'#\': 09aF00')
 
-  var repos   = yield* get_repos(org)
-  var results = yield* send_labels(org, repos, 'PATCH', { name: label, color: color, ext: label })
-
-  log_results(results, label)
-  console.log('done updating labels')
-
-  return yield results
+  return yield* do_all(org, 'PATCH', { name: label, color: color, ext: label }, 'done updating labels')
 }
 
 function* rename(args, program) {
@@ -83,11 +66,15 @@ function* rename(args, program) {
   var label     = args[1]
   var new_label = args[2]
 
-  var repos   = yield* get_repos(org)
-  var results = yield* send_labels(org, repos, 'PATCH', { name: new_label, ext: label })
+  return yield* do_all(org, 'PATCH', { name: new_label, ext: label }, 'done renaming labels')
+}
 
-  log_results(results, label)
-  console.log('done renaming labels')
+function* do_all(org, method, opts, done) {
+  var repos   = yield* get_repos(org)
+  var results = yield* send_labels(org, repos, method, opts)
+
+  log_results(results, opts.name)
+  console.log(done)
 
   return yield results
 }
@@ -99,7 +86,7 @@ function* standardize(args, program) {
   var res = yield request({
         url:     'https://api.github.com/repos/' + org + '/' + config_repo
                + '/contents/config/github_labels.json'
-      , headers: { "User-Agent": GITHUB_USERNAME || "org-labels" }
+      , headers: header
       , auth:    auth
       , json:    true
     })
@@ -134,7 +121,7 @@ function* process_config(org, config) {
         var url = 'https://api.github.com' + res.req.path + '/' + label.name
         var result = yield request({
             url:     url
-          , headers: { 'User-Agent': GITHUB_USERNAME || 'org-labels' }
+          , headers: header
           , method:  'PATCH'
           , json:    { name: label.name, color: label.color }
           , auth:    auth
@@ -157,7 +144,7 @@ function* process_config(org, config) {
 function* get_repos(org) {
   var res = yield request({
         url:     'https://api.github.com/orgs/' + org + '/repos'
-      , headers: { "User-Agent": GITHUB_USERNAME || "org-labels" }
+      , headers: header
       , auth:    auth
       , json:    true
     })
@@ -182,7 +169,7 @@ function* send_labels(org, repos, method, opts) {
   while (i--) {
     arr.push(request({
         url:     url.replace(/:repo/, repos[i]) + (opts.ext ? '/' + opts.ext : '')
-      , headers: { 'User-Agent': GITHUB_USERNAME || 'org-labels' }
+      , headers: header
       , method:  method
       , json:    opts
       , auth:    auth
