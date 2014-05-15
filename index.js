@@ -270,16 +270,16 @@ function log_result(result, label) {
   label = label || result.body.name
 
   if (result.statusCode === 422)
-    console.log('label "' + label + '" already exists at ' + result.request.path)
+    console.log('label `' + label + '` already exists at ' + result.request.path)
 
   else if (result.statusCode === 200)
-    console.log('label "' + label + '" successfully updated at ' + result.request.path)
+    console.log('label `' + label + '` successfully updated at ' + result.request.path)
 
   else if (result.statusCode === 201)
-    console.log('label "' + label + '" successfully created at ' + result.request.path)
+    console.log('label `' + label + '` successfully created at ' + result.request.path)
 
   else if (result.statusCode === 204)
-    console.log('label "' + label + '" successfully deleted from ' + result.request.path)
+    console.log('label `' + label + '` successfully deleted from ' + result.request.path)
 
   else {
     if (result.request.path) console.log(result.request.path)
