@@ -157,28 +157,6 @@ function* async_repo(org, repo, config) {
   return yield results
 }
 
-/*
-  var url = 'https://api.github.com' + res.req.path + '/' + label.name
-  var result = yield request({
-      url:     url
-    , headers: header
-    , method:  'PATCH'
-    , json:    { name: label.name, color: label.color }
-    , auth:    auth
-  })
-
-  if (result.statusCode === 200)
-    console.log('label "' + label.name + '" successfully updated at ' + result.request.path)
-  else {
-    console.log(result.request.path)
-    console.log('status: ' + result.statusCode)
-    if (result.body) console.log(result.body)
-  }
-
-  results[j] = result
-}
-*/
-
 function compare_labels(config, existing) {
   var out = []
   var i   = config.length
