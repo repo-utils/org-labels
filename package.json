@@ -1,6 +1,6 @@
 {
   "name": "org-labels",
-  "description": "Updates issue labels across a GitHub organization.",
+  "description": "A tool to help manage organization-wide GitHub issue labels.",
   "version": "0.1.0",
   "author": {
     "name": "Jeremiah Senkpiel",
