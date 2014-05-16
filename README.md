@@ -2,19 +2,23 @@
 
 WORK IN PROGRESS
 
-A tool for organization-wide GitHub issue labels.
+A tool to help manage organization-wide GitHub issue labels.
 
 ### Install
 
 ```sh
-$ sudo n 0.11.13
-
 $ npm install -g org-labels
 ```
 
 ## Usage
 
+Requires node.js 0.11+ - recommended for use with a node version manager such as [n](https://www.npmjs.org/package/n).
+
+Also requires you to set either GITHUB_API_TOKEN (preferred) or GITHUB_USERNAME and GITHUB_PASSWORD in your environment.
+
 ```sh
+$ sudo n 0.11.13
+
 $ org-labels <command>
 ```
 
@@ -26,9 +30,11 @@ $ org-labels <command>
 - `rename` `<org> <label> <new>` - renames an existing label for all repos.
 - `standardize` `<org> <repo>` - reads a `config/github_labels.json` file from a repo and adds / updates labels on all repos.
 
+__color__ must be a hexadecimal color code without the preceding `#`.
+
 ### Example
 
-This would add a `docs` issue label with the color `d4c5f9` to every repo in `repo-utils`.
+The following would add a `docs` issue label with the color `d4c5f9` to every repo in `repo-utils`.
 
 ```sh
 $ org-labels add repo-utils docs d4c5f9
