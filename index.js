@@ -1,15 +1,14 @@
 var co      = require('co')
-var channel = require('chanel') // don't need maybe?
-var reset   = require('yield-ratelimit-reset') // not sure how to integrate?
 var request = require('co-request')
 
 var valid_color = /^([0-9A-F]{3}$|[0-9A-F]{6}$)/i
+
+var header = { 'User-Agent': 'org-labels' }
 
 var GITHUB_USERNAME  = process.env.GITHUB_USERNAME
 var GITHUB_PASSWORD  = process.env.GITHUB_PASSWORD
 var GITHUB_API_TOKEN = process.env.GITHUB_API_TOKEN
 
-var header = { 'User-Agent': 'org-labels' }
 var auth
 
 if (GITHUB_API_TOKEN) {
@@ -40,14 +39,14 @@ function* add(args, program) {
   if (!valid_color.test(color))
     throw new TypeError('color must be a valid hex color code without the \'#\': 09aF00')
 
-  return yield* do_all(org, 'POST', { name: label, color: color }, 'done adding labels')
+  return yield* handle_label(org, 'POST', { name: label, color: color }, 'done adding labels')
 }
 
 function* remove(args, program) {
   var org   = args[0]
   var label = args[1]
 
-  return yield* do_all(org, 'DELETE', { name: label, ext: label }, 'done removing labels')
+  return yield* handle_label(org, 'DELETE', { name: label, ext: label }, 'done removing labels')
 }
 
 function* update(args, program) {
@@ -58,7 +57,7 @@ function* update(args, program) {
   if (!valid_color.test(color))
     throw new TypeError('color must be a valid hex color code without the \'#\': 09aF00')
 
-  return yield* do_all(org, 'PATCH', { name: label, color: color, ext: label }, 'done updating labels')
+  return yield* handle_label(org, 'PATCH', { name: label, color: color, ext: label }, 'done updating labels')
 }
 
 function* rename(args, program) {
@@ -66,21 +65,7 @@ function* rename(args, program) {
   var label     = args[1]
   var new_label = args[2]
 
-  return yield* do_all(org, 'PATCH', { name: new_label, ext: label }, 'done renaming labels')
-}
-
-function* do_all(org, method, opts, done) {
-  var repos   = yield* get_repos(org)
-  var results = yield* send_labels(org, repos, method, opts)
-
-  var i = results.length
-  while (i--) {
-     log_result(results[i], opts.name)
-  }
-
-  console.log(done)
-
-  return yield results
+  return yield* handle_label(org, 'PATCH', { name: new_label, ext: label }, 'done renaming labels')
 }
 
 function* standardize(args, program) {
@@ -99,33 +84,27 @@ function* standardize(args, program) {
 
   console.log('GitHub rate limit remaining: ' + res.headers['x-ratelimit-remaining'])
 
-  var config  = JSON.parse(new Buffer(res.body.content, 'base64').toString('utf8'))
-  var results = yield* _parrallel_standardize(org, repos, config)
-
-  var total = log_results(results)
-
-  console.log('%d label updates across %d repos', total, repos.length)
-
-  console.log('done standardizing labels')
-}
-
-function* _parrallel_standardize(org, repos, config) {
+  var config = JSON.parse(new Buffer(res.body.content, 'base64').toString('utf8'))
   if (!Array.isArray(config))
     throw new Error('error: github_labels.json must be a json array')
 
   console.log('checking %d labels across %d repos', config.length, repos.length)
 
-  var results = []
-
-  var i = repos.length
+  var i    = repos.length
+  var reqs = []
   while (i--) {
-    results.push(async_repo(org, repos[i], config))
+    reqs.push(handle_repo_labels(org, repos[i], config))
   }
 
-  return yield results
+  var results = yield reqs
+
+  var total = log_results(results)
+
+  console.log('%d label updates across %d repos', total, repos.length)
+  console.log('done standardizing labels')
 }
 
-function* async_repo(org, repo, config) {
+function* handle_repo_labels(org, repo, config) {
 
   var url = 'https://api.github.com/repos/' + org + '/' + repo + '/labels'
   var res = yield request({
@@ -191,11 +170,11 @@ function compare_labels(config, existing) {
 
 function* get_repos(org) {
   var res = yield request({
-        url:     'https://api.github.com/orgs/' + org + '/repos'
-      , headers: header
-      , auth:    auth
-      , json:    true
-    })
+      url:     'https://api.github.com/orgs/' + org + '/repos'
+    , headers: header
+    , auth:    auth
+    , json:    true
+  })
   if (res.statusCode !== 200) throw new Error('error searching org\'s repos: ' + JSON.stringify(res.headers) +'\n')
 
   console.log('found %d repositories in %s\n', res.body.length, org)
@@ -209,16 +188,30 @@ function* get_repos(org) {
   return repos
 }
 
-function* send_labels(org, repos, method, opts) {
+function* handle_label(org, method, opts, done) {
+  var repos   = yield* get_repos(org)
+  var results = yield* send_label(org, repos, opts, method)
+
+  var i = results.length
+  while (i--) {
+     log_result(results[i], opts.name)
+  }
+
+  if (done) console.log(done)
+
+  return yield results
+}
+
+function* send_label(org, repos, opts, method) {
   var arr = []
   var i   = repos.length
-  var url = 'https://api.github.com/repos/' + org + '/:repo/labels'
+  var url = 'https://api.github.com/repos/' + org + '/'
 
   while (i--) {
     arr.push(request({
-        url:     url.replace(/:repo/, repos[i]) + (opts.ext ? '/' + opts.ext : '')
+        url:     url + repos[i] + '/labels' + (opts.ext ? '/' + opts.ext : '')
       , headers: header
-      , method:  method
+      , method:  method || opts.method
       , json:    opts
       , auth:    auth
     }))

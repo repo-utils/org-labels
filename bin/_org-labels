@@ -5,7 +5,7 @@ var co      = require('co')
 
 var org_labels = require('..')
 
-program._name   = 'org-labels'
+program._name = 'org-labels'
 
 program
   .version(require('../package.json').version)
