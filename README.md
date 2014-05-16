@@ -15,21 +15,24 @@ $ npm install -g org-labels
 ## Usage
 
 ```sh
-$ org-labels <github org / user> <label name> <color: 09aF00>
+$ org-labels <command>
 ```
+
+### Commands
+
+- `add` `<org> <label> <color>` - adds a label to all repos.
+- `remove` `<org> <label>` - removes a label from all repos.
+- `update` `<org> <label> <color>` - updates an existing label for all repos.
+- `rename` `<org> <label> <new>` - renames an existing label for all repos.
+- `standardize` `<org> <repo>` - reads a `config/github_labels.json` file from a repo and adds / updates labels on all repos.
 
 ### Example
 
 This would add a `docs` issue label with the color `d4c5f9` to every repo in `repo-utils`.
 
 ```sh
-$ org-labels repo-utils docs d4c5f9
+$ org-labels add repo-utils docs d4c5f9
 ```
-
-### options
-
-- `-u | --update` - Updates existing tags.
-- `-d | --delete` - Deletes the tag.
 
 ## License
 
