@@ -29,21 +29,12 @@
     "tag"
   ],
   "dependencies": {
-    "co": "^3.0.5",
-    "chanel": "^2.0.2",
-    "commander": "^2.1.0",
-    "parse-link-header": "~0.1.0",
-    "yield-ratelimit-reset": "^1.0.0",
-    "co-request": "~0.2.0"
-  },
-  "devDependencies": {
-    "mocha": "*"
+    "co": "^3.0.6",
+    "commander": "^2.2.0",
+    "co-request": "^0.2.0"
   },
   "bin": {
     "org-labels": "./bin/org-labels"
   },
-  "preferGlobal": true,
-  "scripts": {
-    "test": "mocha --reporter spec test/test.js"
-  }
+  "preferGlobal": true
 }
