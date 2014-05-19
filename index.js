@@ -104,10 +104,15 @@ function* standardize(args, program) {
   var org         = args[0]
   var config_repo = args[1]
 
+  // if the config_repo isn't a user/repo path, make it one.
+  if (!~config_repo.indexOf('/')) {
+    config_repo = org + '/' + config_repo
+  }
+
   var repos = yield* get_repos(org)
 
   var res = yield request({
-        url:     'https://api.github.com/repos/' + org + '/' + config_repo + '/contents/config/github_labels.json'
+        url:     'https://api.github.com/repos/' + config_repo + '/contents/config/github_labels.json'
       , headers: header
       , auth:    auth
       , json:    true
