@@ -12,9 +12,9 @@ $ npm install -g org-labels
 
 ## Usage
 
-Requires node.js 0.11+ - recommended for use with a node version manager such as [n](https://www.npmjs.org/package/n).
+Requires node.js 0.11+ - use a node version manager [such as __n__](https://www.npmjs.org/package/n) to switch versions easily.
 
-Also requires you to set either GITHUB_API_TOKEN (preferred) or GITHUB_USERNAME and GITHUB_PASSWORD in your environment.
+Requires a GITHUB_API_TOKEN environment variable. - use [set-env](https://www.npmjs.org/package/set-env) to easily set it. This token must be a [GitHub Personal API Token](https://github.com/blog/1509-personal-api-tokens). It must have either `repo` or at least `public_repo` access.
 
 ```sh
 $ sudo n 0.11.13
