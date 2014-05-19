@@ -217,26 +217,34 @@ function compare_labels(config, existing) {
 }
 
 /*
- * Gets information about all of a GitHub user's (public?) repos.
+ * Gets information about all of a GitHub organization's repos.
  *
  * returns a list of repos
  */
 function* get_repos(org) {
-  var res = yield request({
-      url:     'https://api.github.com/orgs/' + org + '/repos'
-    , headers: header
-    , auth:    auth
-    , json:    true
-  })
-  if (res.statusCode !== 200) throw new Error('error searching org\'s repos: ' + JSON.stringify(res.headers) +'\n')
-
-  console.log('found %d repositories in %s\n', res.body.length, org)
-
-  var i     = res.body.length
   var repos = []
-  while (i--) {
-    repos.push(res.body[i].name)
+  var page = 0
+
+  // handle github pagination for orgs with many repos
+  while (++page) {
+    var res = yield request({
+        url:     'https://api.github.com/orgs/' + org + '/repos?page=' + page
+      , headers: header
+      , auth:    auth
+      , json:    true
+    })
+    if (res.statusCode !== 200) throw new Error('error searching org\'s repos: ' + JSON.stringify(res.headers) +'\n')
+
+    var i = res.body.length
+    while (i--) {
+      repos.push(res.body[i].name)
+    }
+
+    // github api v3 serves 30 repos per page. - 19 / 05 / 2014
+    if (res.body.length < 30) break
   }
+
+  console.log('found %d repositories in %s\n', repos.length, org)
 
   return repos
 }
