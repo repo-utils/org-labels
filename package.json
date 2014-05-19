@@ -1,7 +1,7 @@
 {
   "name": "org-labels",
   "description": "A tool to help manage organization-wide GitHub issue labels.",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "author": {
     "name": "Jeremiah Senkpiel",
     "email": "fishrock123@rocketmail.com",
