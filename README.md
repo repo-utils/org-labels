@@ -1,7 +1,5 @@
 # org-labels [![NPM Version](https://badge.fury.io/js/org-labels.svg)](https://badge.fury.io/js/org-labels)
 
-WORK IN PROGRESS
-
 A tool to help manage organization-wide GitHub issue labels.
 
 ### Install
