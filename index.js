@@ -222,7 +222,8 @@ function compare_labels(config, existing) {
  */
 function* get_repos(org) {
   var repos = []
-  var page = 0
+  var page  = 0
+  var last_length = 0
 
   // handle github pagination for orgs with many repos
   while (++page) {
@@ -239,8 +240,10 @@ function* get_repos(org) {
       repos.push(res.body[i].name)
     }
 
-    // github api v3 serves 30 repos per page. - 19 / 05 / 2014
-    if (res.body.length < 30) break
+    // if this page has less repos than the last, then it is the last page.
+    if (res.body.length < last_length) break
+
+    last_length = res.body.length
   }
 
   console.log('found %d repositories in %s\n', repos.length, org)
