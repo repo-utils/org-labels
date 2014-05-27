@@ -2,13 +2,22 @@
 
 var program = require('commander')
 var co      = require('co')
+var request = require('co-request')
+var readln  = require('readline')
+var semver  = require('semver')
 
 var org_labels = require('..')
+var version    = require('../package.json').version
+
+var rl = readln.createInterface({
+    input:  process.stdin
+  , output: process.stdout
+})
 
 program._name = 'org-labels'
 
 program
-  .version(require('../package.json').version)
+  .version(version)
   .usage('<command>')
   // options
 
@@ -50,8 +59,47 @@ program
 program.parse(process.argv)
 
 function co_labels(fn, args) {
-  co(org_labels[fn](args, program))(function (err) {
+  co(_org_labels(fn, args))(function (err) {
     if (err) throw err
     process.exit()
   })
+}
+
+function* _org_labels(fn, args) {
+  yield* check_version()
+  yield* org_labels[fn](args, program)
+}
+
+/*
+ * Checks org-label's package version against the latest on npm.
+ * Prompts for user input if there is a newer version.
+ */
+function* check_version() {
+  var res = yield request({
+      url: 'https://registry.npmjs.org/org-labels/latest'
+    , json: true
+  })
+
+  if (!res.body.version) return // meh
+
+  if (semver.gt(res.body.version, version)) {
+    console.log('A newer version of org-labels is available. Please update.')
+    console.log('To install the latest org-labels type `[sudo] npm install -g org-labels`')
+    var result = yield confirm('Continue without updating? (yes) ')
+    if ('string' == typeof result && /n|no/i.test(result)) process.exit()
+  }
+}
+
+/*
+ * thunkify rl.question
+ */
+function confirm(question) {
+  return function(done) {
+    var called = false
+    rl.question(question, function(result) {
+      if (called) return
+      called = true
+      done.call(null, undefined, result)
+    })
+  }
 }

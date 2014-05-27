@@ -31,7 +31,8 @@
   "dependencies": {
     "co": "^3.0.6",
     "commander": "^2.2.0",
-    "co-request": "^0.2.0"
+    "co-request": "^0.2.0",
+    "semver": "^2.3.0"
   },
   "bin": {
     "org-labels": "./bin/org-labels"
