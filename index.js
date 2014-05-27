@@ -130,7 +130,7 @@ function* standardize(args, program) {
   var i    = repos.length
   var reqs = []
   while (i--) {
-    reqs.push(handle_repo_labels(org, repos[i], config))
+    reqs.push(handle_repo_labels(org, repos[i], config, program.destructive))
   }
   var results = yield reqs
 
@@ -145,7 +145,7 @@ function* standardize(args, program) {
  *
  * returns an array of responses
  */
-function* handle_repo_labels(org, repo, config) {
+function* handle_repo_labels(org, repo, config, destructive) {
 
   var uri = 'https://api.github.com/repos/' + org + '/' + repo + '/labels'
   var res = yield request({
@@ -157,7 +157,7 @@ function* handle_repo_labels(org, repo, config) {
   })
   if (res.statusCode !== 200) throw new Error('error getting labels from a repo: ' + JSON.stringify(res.headers) +'\n')
 
-  var list = compare_labels(config, res.body)
+  var list = compare_labels(config, res.body, destructive)
 
   var results = []
 
@@ -178,14 +178,15 @@ function* handle_repo_labels(org, repo, config) {
 }
 
 /*
- * Compares a list of wanted labels to a list of existing labels
- *  and determines the differences.existing
+ * Compares two lists of labels and determines the differences.
  *
  * returns a list of objects containing the needed JSON body and http method.
  */
-function compare_labels(config, existing) {
+function compare_labels(config, _existing, destructive) {
   var out = []
   var i   = config.length
+  // don't splice the actual array
+  var existing = _existing.slice(0)
 
   while (i--) {
     var wanted = config[i]
@@ -197,6 +198,7 @@ function compare_labels(config, existing) {
       current = existing[j]
       if (wanted.name !== current.name) continue
 
+      existing.splice(j, 1)
       next = {
           name:   wanted.name
         , color:  wanted.color
@@ -212,6 +214,15 @@ function compare_labels(config, existing) {
       , method: 'POST'
     })
   }
+
+  i = existing.length
+  while (destructive && i--) {
+    out.push({
+        name:   existing[i].name
+      , method: 'DELETE'
+    })
+  }
+
   return out
 }
 
@@ -326,7 +337,12 @@ function log_results(results) {
  * Logs a single response object.
  */
 function log_result(result, label) {
-  label = label || result.body.name
+  label = label || (result.body && result.body.name)
+  // delete requests to github do not return bodies ..
+  if (!label) {
+    var path = result.request.path
+    label = path.slice(path.lastIndexOf('/') + 1)
+  }
 
   if (result.statusCode === 422)
     console.log('label `' + label + '` already exists at ' + result.request.path)

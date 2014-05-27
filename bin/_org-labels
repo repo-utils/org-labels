@@ -19,7 +19,7 @@ program._name = 'org-labels'
 program
   .version(version)
   .usage('<command>')
-  // options
+  .option('-d, --destructive', 'allow standardize to remove labels that are not found in the config file')
 
 program
   .command('add <org> <label> <color>')
