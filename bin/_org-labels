@@ -76,7 +76,7 @@ function* _org_labels(fn, args) {
  */
 function* check_version() {
   var res = yield request({
-      url: 'https://registry.npmjs.org/org-labels/latest'
+      uri: 'https://registry.npmjs.org/org-labels/latest'
     , json: true
   })
 

@@ -111,7 +111,7 @@ function* standardize(args, program) {
   var repos = yield* get_repos(org)
 
   var res = yield request({
-        url:     'https://api.github.com/repos/' + config_repo + '/contents/config/github_labels.json'
+        uri:     'https://api.github.com/repos/' + config_repo + '/contents/config/github_labels.json'
       , headers: header
       , auth:    auth
       , json:    true
@@ -147,9 +147,9 @@ function* standardize(args, program) {
  */
 function* handle_repo_labels(org, repo, config) {
 
-  var url = 'https://api.github.com/repos/' + org + '/' + repo + '/labels'
+  var uri = 'https://api.github.com/repos/' + org + '/' + repo + '/labels'
   var res = yield request({
-      url:     url
+      uri:     uri
     , headers: header
     , method:  'GET'
     , json:    true
@@ -166,7 +166,7 @@ function* handle_repo_labels(org, repo, config) {
     item = list[i]
 
     results.push(request({
-        url:     url + (item.method === 'POST' ? '' : '/' + item.name)
+        uri:     uri + (item.method === 'POST' ? '' : '/' + item.name)
       , headers: header
       , method:  item.method
       , json:    item
@@ -227,7 +227,7 @@ function* get_repos(org) {
   // handle github pagination for orgs with many repos
   while (++page) {
     var res = yield request({
-        url:     'https://api.github.com/users/' + org + '/repos?page=' + page
+        uri:     'https://api.github.com/users/' + org + '/repos?page=' + page
       , headers: header
       , auth:    auth
       , json:    true
@@ -274,7 +274,7 @@ function* handle_label(org, method, opts, done) {
  *
  * Options can contain:
  *   - The outgoing json, sent as the entire options.
- *   - The url extension.
+ *   - The uri extension.
  *   - The http method, if not otherwise specified.
  *
  * returns an array of responses
@@ -282,11 +282,11 @@ function* handle_label(org, method, opts, done) {
 function* send_label(org, repos, opts, method) {
   var arr = []
   var i   = repos.length
-  var url = 'https://api.github.com/repos/' + org + '/'
+  var uri = 'https://api.github.com/repos/' + org + '/'
 
   while (i--) {
     arr.push(request({
-        url:     url + repos[i] + '/labels' + (opts.ext ? '/' + opts.ext : '')
+        uri:     uri + repos[i] + '/labels' + (opts.ext ? '/' + opts.ext : '')
       , headers: header
       , method:  method || opts.method
       , json:    opts
