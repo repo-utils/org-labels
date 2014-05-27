@@ -1,4 +1,3 @@
-var co      = require('co')
 var request = require('co-request')
 
 /*
