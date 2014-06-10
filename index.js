@@ -329,9 +329,12 @@ function log_results(results) {
     while (j--) {
       var result = sub[j]
 
-      updates++
-      if (!~repos.indexOf(result.request.path))
-        repos.push(result.request.path)
+      // increment counter on successful request (2XX code)
+      if (('' + result.statusCode)[0] === "2") {
+        updates++
+        if (!~repos.indexOf(result.request.path))
+          repos.push(result.request.path)
+      }
 
       log_result(result)
     }
