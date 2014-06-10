@@ -134,9 +134,9 @@ function* standardize(args, program) {
   }
   var results = yield reqs
 
-  var total = log_results(results)
+  var info = log_results(results)
 
-  console.log('%d label updates across %d repos', total, repos.length)
+  console.log('%d label updates across %d repos', info.updates, info.repos)
   console.log('done standardizing labels')
 }
 
@@ -317,20 +317,27 @@ function* send_label(org, repos, opts, method) {
  * returns the total number of results
  */
 function log_results(results) {
-  var total = 0
-  var i     = results.length
+  var updates = 0
+  var repos   = []
+
+  var i = results.length
 
   while (i--) {
     var sub = results[i]
     var j   = sub.length
 
     while (j--) {
-      total++
-      log_result(sub[j])
+      var result = sub[j]
+
+      updates++
+      if (!~repos.indexOf(result.request.path))
+        repos.push(result.request.path)
+
+      log_result(result)
     }
   }
 
-  return total
+  return { updates: updates, repos: repos.length }
 }
 
 /*
