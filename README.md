@@ -30,6 +30,10 @@ $ org-labels <command>
 
 __color__ must be a hexadecimal color code without the preceding `#`.
 
+#### Options
+
+- `-d` `--destructive` - When enabled, allows `standardize` to remove labels not found in the config file.
+
 ### Example
 
 The following would add a `docs` issue label with the color `d4c5f9` to every repo in `repo-utils`.
