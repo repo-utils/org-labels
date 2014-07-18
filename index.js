@@ -108,7 +108,16 @@ function* standardize(args, program) {
     config_repo = org + '/' + config_repo
   }
 
-  var repos = yield* get_repos(org)
+  // check if the org specifies a single repo via org/repo
+  if (~org.indexOf('/')) {
+    var org_and_repo = org.split('/')
+
+    var repos = [org_and_repo[1]]
+    org = org_and_repo[0]
+  } else {
+    // if no single repo is specified, do all the repos! \o/
+    var repos = yield* get_repos(org)
+  }
 
   var res = yield request({
         uri:     'https://api.github.com/repos/' + config_repo + '/contents/config/github_labels.json'
