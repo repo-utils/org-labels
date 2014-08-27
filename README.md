@@ -40,12 +40,18 @@ Both `<org>` and `<repo>` may optionally be formated as `<org/repo>`.
 
 - `-d` `--destructive` - When enabled, allows `standardize` to remove labels not found in the config file.
 
-## Example
+## Examples
 
 The following would add a `docs` issue label with the color `d4c5f9` to every repo in `repo-utils`.
 
 ```bash
 $ org-labels add repo-utils docs d4c5f9
+```
+
+The following would standardize labels in all `repo-utils` repos using the [jshttp labels config](https://github.com/jshttp/style-guide/tree/master/config).
+
+```bash
+$ org-labels standardize repo-utils jshttp/style-guide
 ```
 
 ## [MIT Licensed](LICENSE)
