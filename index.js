@@ -120,10 +120,10 @@ function* standardize(args, program) {
   }
 
   var res = yield request({
-        uri:     'https://api.github.com/repos/' + config_repo + '/contents/config/github_labels.json'
+        uri    : 'https://api.github.com/repos/' + config_repo + '/contents/config/github_labels.json'
       , headers: header
-      , auth:    auth
-      , json:    true
+      , auth   : auth
+      , json   : true
     })
   if (res.statusCode !== 200) throw new Error('error retrieving config from repo: ' + JSON.stringify(res.headers) +'\n')
 
@@ -158,11 +158,11 @@ function* handle_repo_labels(org, repo, config, destructive) {
 
   var uri = 'https://api.github.com/repos/' + org + '/' + repo + '/labels'
   var res = yield request({
-      uri:     uri
+      uri    : uri
     , headers: header
-    , method:  'GET'
-    , json:    true
-    , auth:    auth
+    , method : 'GET'
+    , json   : true
+    , auth   : auth
   })
   if (res.statusCode !== 200) throw new Error('error getting labels from a repo: ' + JSON.stringify(res.headers) +'\n')
 
@@ -175,11 +175,11 @@ function* handle_repo_labels(org, repo, config, destructive) {
     item = list[i]
 
     results.push(request({
-        uri:     uri + (item.method === 'POST' ? '' : '/' + item.name)
+        uri    : uri + (item.method === 'POST' ? '' : '/' + item.name)
       , headers: header
-      , method:  item.method
-      , json:    item
-      , auth:    auth
+      , method : item.method
+      , json   : item
+      , auth   : auth
     }))
   }
 
@@ -209,8 +209,8 @@ function compare_labels(config, _existing, destructive) {
 
       existing.splice(j, 1)
       next = {
-          name:   wanted.name
-        , color:  wanted.color
+          name  : wanted.name
+        , color : wanted.color
         , method: 'PATCH'
       }
       break
@@ -218,8 +218,8 @@ function compare_labels(config, _existing, destructive) {
     if (next && wanted.color === current.color) continue
 
     out.push(next || {
-        name:   wanted.name
-      , color:  wanted.color
+        name  : wanted.name
+      , color : wanted.color
       , method: 'POST'
     })
   }
@@ -227,7 +227,7 @@ function compare_labels(config, _existing, destructive) {
   i = existing.length
   while (destructive && i--) {
     out.push({
-        name:   existing[i].name
+        name  : existing[i].name
       , method: 'DELETE'
     })
   }
@@ -248,10 +248,10 @@ function* get_repos(org) {
   // handle github pagination for orgs with many repos
   while (++page) {
     var res = yield request({
-        uri:     'https://api.github.com/users/' + org + '/repos?page=' + page
+        uri    : 'https://api.github.com/users/' + org + '/repos?page=' + page
       , headers: header
-      , auth:    auth
-      , json:    true
+      , auth   : auth
+      , json   : true
     })
     if (res.statusCode !== 200) throw new Error('error searching org\'s repos: ' + JSON.stringify(res.headers) +'\n')
 
@@ -309,11 +309,11 @@ function* send_label(org, repos, opts, method) {
 
   while (i--) {
     arr.push(request({
-        uri:     uri + repos[i] + '/labels' + (opts.ext ? '/' + opts.ext : '')
+        uri    : uri + repos[i] + '/labels' + (opts.ext ? '/' + opts.ext : '')
       , headers: header
-      , method:  method || opts.method
-      , json:    opts
-      , auth:    auth
+      , method : method || opts.method
+      , json   : opts
+      , auth   : auth
     }))
   }
 
