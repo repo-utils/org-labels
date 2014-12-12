@@ -58,6 +58,8 @@ program
 
 program.parse(process.argv)
 
+if (!program.args.length) program.help()
+
 function co_labels(fn, args) {
   co(_org_labels(fn, args))(function (err) {
     if (err) throw err
