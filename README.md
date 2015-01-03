@@ -2,7 +2,7 @@
 
 [![NPM Version](https://img.shields.io/npm/v/org-labels.svg?style=flat)](https://www.npmjs.org/package/org-labels)
 [![NPM Downloads](https://img.shields.io/npm/dm/org-labels.svg?style=flat)](https://www.npmjs.org/package/org-labels)
-[![Node.js Version](https://img.shields.io/badge/io.js->=_1.1.0-orange.svg?style=flat)](http://nodejs.org/download/)
+[![Node.js Version](https://img.shields.io/badge/io.js-≥_1.1.0-orange.svg?style=flat)](http://nodejs.org/download/)
 
 A tool to help manage organization-wide GitHub issue labels.
 
