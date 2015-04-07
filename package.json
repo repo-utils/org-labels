@@ -31,7 +31,7 @@
     "bin"
   ],
   "bin": {
-    "org-labels": "./bin/_org-labels"
+    "org-labels": "./bin/org-labels"
   },
   "preferGlobal": true
 }
