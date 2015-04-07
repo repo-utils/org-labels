@@ -23,7 +23,7 @@
     "semver": "^3.0.1"
   },
   "engines": {
-    "node": ">= 0.11.13"
+    "node": ">= 1.1.0"
   },
   "files": [
     "LICENSE",
@@ -31,7 +31,7 @@
     "bin"
   ],
   "bin": {
-    "org-labels": "./bin/org-labels"
+    "org-labels": "./bin/_org-labels"
   },
   "preferGlobal": true
 }
