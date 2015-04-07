@@ -2,7 +2,7 @@
 
 [![NPM Version](https://img.shields.io/npm/v/org-labels.svg?style=flat)](https://www.npmjs.org/package/org-labels)
 [![NPM Downloads](https://img.shields.io/npm/dm/org-labels.svg?style=flat)](https://www.npmjs.org/package/org-labels)
-[![Node.js Version](https://img.shields.io/badge/node.js->=_0.11-orange.svg?style=flat)](http://nodejs.org/download/)
+[![Node.js Version](https://img.shields.io/badge/io.js->=_1.1.0-orange.svg?style=flat)](http://nodejs.org/download/)
 
 A tool to help manage organization-wide GitHub issue labels.
 
@@ -14,13 +14,11 @@ $ npm install -g org-labels
 
 ## Usage
 
-Requires node.js 0.11+ - use a node version manager [such as __n__](https://www.npmjs.org/package/n) to switch versions easily.
+Requires [io.js](https://iojs.org/en/index.html) 1.1.0+ - use a node version manager [such as __nvm__](https://github.com/creationix/nvm) to switch versions easily.
 
 Requires a GITHUB_API_TOKEN environment variable. - use [set-env](https://www.npmjs.org/package/set-env) to easily set it. This token must be a [GitHub Personal API Token](https://github.com/blog/1509-personal-api-tokens). It must have either `repo` or at least `public_repo` access.
 
 ```bash
-$ sudo n 0.11.13
-
 $ org-labels <command>
 ```
 
@@ -34,7 +32,7 @@ $ org-labels <command>
 
 __color__ must be a hexadecimal color code without the preceding `#`.
 
-Both `<org>` and `<repo>` may optionally be formated as `<org/repo>`.
+Both `<org>` and `<repo>` may optionally be formatted as `<org/repo>`.
 
 #### Options
 
