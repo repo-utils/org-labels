@@ -17,10 +17,11 @@
     "tag"
   ],
   "dependencies": {
-    "co": "^3.1.0",
+    "co": "^4.5.1",
     "commander": "^2.7.1",
-    "co-request": "^0.2.1",
-    "semver": "^4.3.3"
+    "request-promise": "^0.4.1",
+    "semver": "^4.3.3",
+    "bluebird": "^2.9.24"
   },
   "engines": {
     "node": ">= 1.1.0"

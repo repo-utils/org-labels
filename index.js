@@ -1,4 +1,4 @@
-var request = require('co-request')
+var request = require('request-promise')
 
 /*
  * checks that a string is a valid hex color code without the preceding `#`
@@ -120,12 +120,14 @@ function* standardize(args, program) {
   }
 
   var res = yield request({
-        uri    : 'https://api.github.com/repos/' + config_repo + '/contents/config/github_labels.json'
-      , headers: header
-      , auth   : auth
-      , json   : true
-    })
-  if (res.statusCode !== 200) throw new Error('error retrieving config from repo: ' + JSON.stringify(res.headers) +'\n')
+      uri    : 'https://api.github.com/repos/' + config_repo + '/contents/config/github_labels.json'
+    , headers: header
+    , auth   : auth
+    , json   : true
+    , resolveWithFullResponse: true
+  }).catch(log_request_err)
+
+  if (!res) return []
 
   console.log('GitHub rate limit remaining: ' + res.headers['x-ratelimit-remaining'])
 
@@ -163,10 +165,11 @@ function* handle_repo_labels(org, repo, config, destructive) {
     , method : 'GET'
     , json   : true
     , auth   : auth
-  })
-  if (res.statusCode !== 200) throw new Error('error getting labels from a repo: ' + JSON.stringify(res.headers) +'\n')
+  }).catch(log_request_err)
 
-  var list = compare_labels(config, res.body, destructive)
+  if (!res) return []
+
+  var list = compare_labels(config, res, destructive)
 
   var results = []
 
@@ -252,18 +255,19 @@ function* get_repos(org) {
       , headers: header
       , auth   : auth
       , json   : true
-    })
-    if (res.statusCode !== 200) throw new Error('error searching org\'s repos: ' + JSON.stringify(res.headers) +'\n')
+    }).catch(log_request_err)
 
-    var i = res.body.length
+    if (!res) continue
+
+    var i = res.length
     while (i--) {
-      repos.push(res.body[i].name)
+      repos.push(res[i].name)
     }
 
     // if this page has less repos than the last, then it is the last page.
-    if (res.body.length < last_length) break
+    if (res.length < last_length) break
 
-    last_length = res.body.length
+    last_length = res.length
   }
 
   console.log('found %d repositories in %s\n', repos.length, org)
@@ -314,6 +318,7 @@ function* send_label(org, repos, opts, method) {
       , method : method || opts.method
       , json   : opts
       , auth   : auth
+      , resolveWithFullResponse: true
     }))
   }
 
@@ -380,4 +385,11 @@ function log_result(result, label) {
     console.log('status: ' + result.statusCode)
     if (result.body) console.log(result.body)
   }
+}
+
+/*
+ * Generic request error logger
+ */
+function log_request_err(err) {
+  console.log('error searching org\'s repos: ' + JSON.stringify(err.response.headers) +'\n')
 }
