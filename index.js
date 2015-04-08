@@ -11,44 +11,55 @@ var valid_color = /^([0-9A-F]{3}$|[0-9A-F]{6}$)/i
 var header = { 'User-Agent': 'org-labels' }
 
 /*
- * GitHub auth variables.
- * Set either user+pass or just the token (recommended) in your environment
- *  before running this tool.
- *
- * The token is just a user access token, you can generate a new token
- *  in your GitHub Account Settings, under the Security tab.
+ * expose `Labeler`
  */
-var GITHUB_USERNAME  = process.env.GITHUB_USERNAME
-var GITHUB_PASSWORD  = process.env.GITHUB_PASSWORD
-var GITHUB_API_TOKEN = process.env.GITHUB_API_TOKEN
+module.exports = Labeler
 
-var auth
-
-if (GITHUB_API_TOKEN) {
-  auth = {
-      user: GITHUB_API_TOKEN
+/*
+ * Initialize with CLI options and GitHub auth
+ *
+ * This allows us to not pass this stuff absolutely everwhere.
+ *
+ * opts = {
+ *   destructive: <boolean>
+ * }
+}
+*/
+function Labeler(opts, auth) {
+  this.opts = opts
+  this.auth = {
+      user: auth.token
     , pass: 'x-oauth-basic'
   }
-} else if (GITHUB_USERNAME && GITHUB_PASSWORD) {
-  auth = {
-      user: GITHUB_USERNAME
-    , pass: GITHUB_PASSWORD
-  }
-} else {
-  throw new Error('requires a personal env.GITHUB_API_TOKEN or both env.GITHUB_USERNAME and env.GITHUB_PASSWORD')
 }
 
+/*
+ * Setup the prototype functions
+ */
+var proto = Labeler.prototype
 
-module.exports.add    = add
-module.exports.remove = remove
-module.exports.update = update
-module.exports.rename = rename
-module.exports.standardize = standardize
+/* actions */
+proto.add = add
+proto.remove = remove
+proto.update = update
+proto.rename = rename
+proto.standardize = standardize
+
+/* utilities */
+proto.handle_repo_labels = handle_repo_labels
+proto.compare_labels     = compare_labels
+proto.get_repos          = get_repos
+proto.handle_label       = handle_label
+proto.send_label         = send_label
+proto.log_results        = log_results
+proto.log_result         = log_result
+proto.log_request_err    = log_request_err
+
 
 /*
  * Adds a label with the specified name and color to all repos in an org.
  */
-function* add(args, program) {
+function* add(args) {
   var org   = args[0]
   var label = args[1]
   var color = args[2]
@@ -62,7 +73,7 @@ function* add(args, program) {
 /*
  * Removes a label with the specified name from all repos in an org.
  */
-function* remove(args, program) {
+function* remove(args) {
   var org   = args[0]
   var label = args[1]
 
@@ -72,7 +83,7 @@ function* remove(args, program) {
 /*
  * Updates an existing label with the specified name to the specified color for all repos in an org.
  */
-function* update(args, program) {
+function* update(args) {
   var org   = args[0]
   var label = args[1]
   var color = args[2]
@@ -86,7 +97,7 @@ function* update(args, program) {
 /*
  * Renames an existing label with the specified revised name for all repos in an org.
  */
-function* rename(args, program) {
+function* rename(args) {
   var org       = args[0]
   var label     = args[1]
   var new_label = args[2]
@@ -99,7 +110,7 @@ function* rename(args, program) {
  *
  * The json list must reside in a repo at config/github_labels.json
  */
-function* standardize(args, program) {
+function* standardize(args) {
   var org         = args[0]
   var config_repo = args[1]
 
@@ -107,6 +118,21 @@ function* standardize(args, program) {
   if (!~config_repo.indexOf('/')) {
     config_repo = org + '/' + config_repo
   }
+
+  var res = yield request({
+      uri    : 'https://api.github.com/repos/' + config_repo + '/contents/config/github_labels.json'
+    , headers: header
+    , auth   : this.auth
+    , json   : true
+    , resolveWithFullResponse: true
+  }).catch(log_request_err('error retrieving config from repo:'))
+
+  if (!res) process.exit()
+
+  // github sends the body (json file) as base64
+  var config = JSON.parse(new Buffer(res.body.content, 'base64').toString('utf8'))
+  if (!Array.isArray(config))
+    throw new Error('error: github_labels.json must be a json array')
 
   // check if the org specifies a single repo via org/repo
   if (~org.indexOf('/')) {
@@ -119,29 +145,12 @@ function* standardize(args, program) {
     var repos = yield* get_repos(org)
   }
 
-  var res = yield request({
-      uri    : 'https://api.github.com/repos/' + config_repo + '/contents/config/github_labels.json'
-    , headers: header
-    , auth   : auth
-    , json   : true
-    , resolveWithFullResponse: true
-  }).catch(log_request_err)
-
-  if (!res) return []
-
-  console.log('GitHub rate limit remaining: ' + res.headers['x-ratelimit-remaining'])
-
-  // github sends the body (json file) as base64
-  var config = JSON.parse(new Buffer(res.body.content, 'base64').toString('utf8'))
-  if (!Array.isArray(config))
-    throw new Error('error: github_labels.json must be a json array')
-
   console.log('checking %d labels across %d repos', config.length, repos.length)
 
   var i    = repos.length
   var reqs = []
   while (i--) {
-    reqs.push(handle_repo_labels(org, repos[i], config, program.destructive))
+    reqs.push(handle_repo_labels(org, repos[i], config, this.opts.destructive))
   }
   var results = yield reqs
 
@@ -164,8 +173,8 @@ function* handle_repo_labels(org, repo, config, destructive) {
     , headers: header
     , method : 'GET'
     , json   : true
-    , auth   : auth
-  }).catch(log_request_err)
+    , auth   : this.auth
+  }).catch(log_request_err('error getting labels from a repo:'))
 
   if (!res) return []
 
@@ -182,7 +191,7 @@ function* handle_repo_labels(org, repo, config, destructive) {
       , headers: header
       , method : item.method
       , json   : item
-      , auth   : auth
+      , auth   : this.auth
     }))
   }
 
@@ -253,9 +262,9 @@ function* get_repos(org) {
     var res = yield request({
         uri    : 'https://api.github.com/users/' + org + '/repos?page=' + page
       , headers: header
-      , auth   : auth
+      , auth   : this.auth
       , json   : true
-    }).catch(log_request_err)
+    }).catch(log_request_err('error retrieving org\'s repos:'))
 
     if (!res) continue
 
@@ -317,7 +326,7 @@ function* send_label(org, repos, opts, method) {
       , headers: header
       , method : method || opts.method
       , json   : opts
-      , auth   : auth
+      , auth   : this.auth
       , resolveWithFullResponse: true
     }))
   }
@@ -388,8 +397,10 @@ function log_result(result, label) {
 }
 
 /*
- * Generic request error logger
+ * make a generic request error logger with a specified message
  */
-function log_request_err(err) {
-  console.log('error searching org\'s repos: ' + JSON.stringify(err.response.headers) +'\n')
+function log_request_err(msg) {
+  return function (err) {
+    console.log(msg, JSON.stringify(err.response.headers) +'\n')
+  }
 }

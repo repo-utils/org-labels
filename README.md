@@ -14,13 +14,16 @@ $ npm install -g org-labels
 
 ## Usage
 
-Requires [io.js](https://iojs.org/en/index.html) 1.1.0+ - use a node version manager [such as __nvm__](https://github.com/creationix/nvm) to switch versions easily.
-
-Requires a GITHUB_API_TOKEN environment variable. - use [set-env](https://www.npmjs.org/package/set-env) to easily set it. This token must be a [GitHub Personal API Token](https://github.com/blog/1509-personal-api-tokens). It must have either `repo` or at least `public_repo` access.
-
 ```bash
 $ org-labels <command>
 ```
+
+Requires [io.js](https://iojs.org/en/index.html) 1.1.0+ - use a node version manager [such as __nvm__](https://github.com/creationix/nvm) to switch versions easily.
+
+#### GitHub Security
+
+org-labels uses [`ghuath`](https://github.com/rvagg/ghauth) for GitHub authentication.
+The version is fixed, and I have done a rough review of its code.
 
 ### Commands
 
