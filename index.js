@@ -402,6 +402,11 @@ function log_result(result, label) {
  */
 function log_request_err(msg) {
   return function (err) {
+    if (err.response.headers['x-ratelimit-remaining']>>0 === 0) {
+      console.log('Exceded GitHub rate-limit. Bailing.')
+      return process.exit()
+    }
+
     console.log(msg, JSON.stringify(err.response.headers) +'\n')
   }
 }
