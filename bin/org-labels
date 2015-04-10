@@ -7,6 +7,7 @@ var readln  = require('readline')
 var semver  = require('semver')
 var Promise = require('bluebird')
 var _ghauth = require('ghauth')
+var moment  = require('moment')
 
 var Labeler = require('..')
 var version = require('../package.json').version
@@ -128,12 +129,13 @@ function* check_github_ratelimit(auth) {
     console.log('Error getting rate-limit:', err.message)
   })
 
-  if (res.resources.core.remaining < 90 ||
-      res.resources.search.remaining < 10) {
-    console.log('GitHub rate-limit remaining is too low. Please wait a while. Bailing.')
+  var limit = res.resources
+
+  if (limit.core.remaining < 90) {
+    console.log('GitHub rate-limit remaining is too low.')
+    console.log('Please try again %s. Bailing.', moment(limit.core.reset * 1000).fromNow())
     process.exit()
   }
 
-  console.log('GitHub rate limit remaining: { core: %s, search: %s }',
-      res.resources.core.remaining, res.resources.search.remaining)
+  console.log('GitHub rate limit remaining: %s', limit.core.remaining)
 }
