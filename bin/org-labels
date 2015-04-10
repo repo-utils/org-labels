@@ -64,7 +64,11 @@ function co_labels(fn, args) {
   co(_org_labels(fn, args))
   .then(process.exit)
   .catch(function (err) {
-    console.log(err.stack)
+    if (err.options && err.options.uri) {
+      console.log('Error: %s - %s', err.statusCode, err.options.uri)
+    } else {
+      console.log(err.stack)
+    }
     process.exit()
   })
 }
