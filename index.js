@@ -47,13 +47,9 @@ proto.standardize = standardize
 
 /* utilities */
 proto.handle_repo_labels = handle_repo_labels
-proto.compare_labels     = compare_labels
 proto.get_repos          = get_repos
 proto.handle_label       = handle_label
 proto.send_label         = send_label
-proto.log_results        = log_results
-proto.log_result         = log_result
-proto.log_request_err    = log_request_err
 
 
 /*
@@ -67,7 +63,8 @@ function* add(args) {
   if (!valid_color.test(color))
     throw new TypeError('color must be a valid hex color code without the \'#\': 09aF00')
 
-  return yield* handle_label(org, 'POST', { name: label, color: color }, 'done adding labels')
+  return yield* this.handle_label(org, 'POST', { name: label, color: color },
+      'done adding labels')
 }
 
 /*
@@ -77,7 +74,8 @@ function* remove(args) {
   var org   = args[0]
   var label = args[1]
 
-  return yield* handle_label(org, 'DELETE', { name: label, ext: label }, 'done removing labels')
+  return yield* this.handle_label(org, 'DELETE', { name: label, ext: label },
+      'done removing labels')
 }
 
 /*
@@ -91,7 +89,8 @@ function* update(args) {
   if (!valid_color.test(color))
     throw new TypeError('color must be a valid hex color code without the \'#\': 09aF00')
 
-  return yield* handle_label(org, 'PATCH', { name: label, color: color, ext: label }, 'done updating labels')
+  return yield* this.handle_label(org, 'PATCH', { name: label, color: color, ext: label },
+      'done updating labels')
 }
 
 /*
@@ -102,7 +101,8 @@ function* rename(args) {
   var label     = args[1]
   var new_label = args[2]
 
-  return yield* handle_label(org, 'PATCH', { name: new_label, ext: label }, 'done renaming labels')
+  return yield* this.handle_label(org, 'PATCH', { name: new_label, ext: label },
+      'done renaming labels')
 }
 
 /*
@@ -142,7 +142,7 @@ function* standardize(args) {
     org = org_and_repo[0]
   } else {
     // if no single repo is specified, do all the repos! \o/
-    var repos = yield* get_repos(org)
+    var repos = yield* this.get_repos(org)
   }
 
   console.log('checking %d labels across %d repos', config.length, repos.length)
@@ -150,7 +150,7 @@ function* standardize(args) {
   var i    = repos.length
   var reqs = []
   while (i--) {
-    reqs.push(handle_repo_labels(org, repos[i], config, this.opts.destructive))
+    reqs.push(this.handle_repo_labels(org, repos[i], config, this.opts.destructive))
   }
   var results = yield reqs
 
@@ -192,6 +192,7 @@ function* handle_repo_labels(org, repo, config, destructive) {
       , method : item.method
       , json   : item
       , auth   : this.auth
+      , resolveWithFullResponse: true
     }))
   }
 
@@ -292,8 +293,8 @@ function* get_repos(org) {
  * returns an array of responses
  */
 function* handle_label(org, method, opts, done) {
-  var repos   = yield* get_repos(org)
-  var results = yield* send_label(org, repos, opts, method)
+  var repos   = yield* this.get_repos(org)
+  var results = yield* this.send_label(org, repos, opts, method)
 
   var i = results.length
   while (i--) {
