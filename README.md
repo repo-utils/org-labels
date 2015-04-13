@@ -18,7 +18,7 @@ $ npm install -g org-labels
 $ org-labels <command>
 ```
 
-Requires [io.js](https://iojs.org/en/index.html) 1.1.0+ - use a node version manager [such as __nvm__](https://github.com/creationix/nvm) to switch versions easily.
+Requires [io.js](https://iojs.org/en/index.html) 1.1.0+ — you can use a node version manager [such as __nvm__](https://github.com/creationix/nvm) to switch node versions easily.
 
 #### GitHub Security
 
