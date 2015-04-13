@@ -1,7 +1,7 @@
 {
   "name": "org-labels",
   "description": "A tool to help manage organization-wide GitHub issue labels.",
-  "version": "1.0.4",
+  "version": "2.0.0",
   "author": "Jeremiah Senkpiel <fishrock123@rocketmail.com> (https://searchbeam.jit.su)",
   "license": "MIT",
   "repository": "repo-utils/org-labels",
