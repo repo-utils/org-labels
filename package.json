@@ -22,7 +22,7 @@
     "request-promise": "^0.4.1",
     "semver": "^4.3.3",
     "bluebird": "^2.9.24",
-    "moment": "^2.10.2",
+    "moment": "^2.11.0",
     "ghauth": "2.0.0"
   },
   "engines": {
