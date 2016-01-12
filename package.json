@@ -19,7 +19,7 @@
   "dependencies": {
     "co": "^4.5.1",
     "commander": "^2.7.1",
-    "request-promise": "^0.4.1",
+    "request-promise": "^2.0.0",
     "semver": "^4.3.3",
     "bluebird": "^2.9.24",
     "moment": "^2.10.2",
