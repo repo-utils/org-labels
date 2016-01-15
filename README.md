@@ -22,7 +22,7 @@ Requires [io.js](https://iojs.org/en/index.html) 1.1.0+ — you can use a node v
 
 #### GitHub Security
 
-org-labels uses [`ghuath`](https://github.com/rvagg/ghauth) for GitHub authentication.
+org-labels uses [`ghauth`](https://github.com/rvagg/ghauth) for GitHub authentication.
 The version is fixed, and I have done a rough review of its code.
 
 ### Commands
